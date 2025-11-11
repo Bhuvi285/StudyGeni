@@ -1,19 +1,19 @@
+// middleware/uploadMiddleware.js
 import multer from "multer";
 import path from "path";
-import fs from "fs";
+import { fileURLToPath } from "url";
 
-const uploadPath = "uploads/";
+const storage = multer.memoryStorage(); // ✅ no local folder — keeps file in memory
 
-// create folder if not exists
-if (!fs.existsSync(uploadPath)) {
-  fs.mkdirSync(uploadPath);
-}
+const fileFilter = (req, file, cb) => {
+  const allowedTypes = ["image/jpeg", "image/png", "application/pdf"];
+  if (allowedTypes.includes(file.mimetype)) {
+    cb(null, true);
+  } else {
+    cb(new Error("Only .jpg, .png, or .pdf files allowed"), false);
+  }
+};
 
-const storage = multer.diskStorage({
-  destination: (req, file, cb) => cb(null, uploadPath),
-  filename: (req, file, cb) => {
-    cb(null, `${Date.now()}${path.extname(file.originalname)}`);
-  },
-});
+const upload = multer({ storage, fileFilter });
 
-export const upload = multer({ storage });
+export default upload;
